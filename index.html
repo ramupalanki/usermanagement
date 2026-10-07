@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>User Management</title>
+<style>
+:root{
+  --bg:#f3f5f4;--surface:#fff;--ink:#17211d;--muted:#5d6b65;--line:#d9dfdc;
+  --accent:#0f6b5c;--accent-ink:#fff;--danger:#b3261e;--ok-bg:#dff1ea;--ok:#0f6b5c;--off-bg:#eceeed;--off:#5d6b65;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#121a17;--surface:#1b2622;--ink:#e8efec;--muted:#9bab a4;--muted:#9baba4;--line:#2e3b36;
+  --accent:#3fb59f;--accent-ink:#06211b;--danger:#ff8a80;--ok-bg:#1d3b34;--ok:#7fe0cb;--off-bg:#26312d;--off:#9baba4;}}
+:root[data-theme="dark"]{
+  --bg:#121a17;--surface:#1b2622;--ink:#e8efec;--muted:#9baba4;--line:#2e3b36;
+  --accent:#3fb59f;--accent-ink:#06211b;--danger:#ff8a80;--ok-bg:#1d3b34;--ok:#7fe0cb;--off-bg:#26312d;--off:#9baba4;}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;line-height:1.5}
+[hidden]{display:none!important}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 14px;cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+.btn.danger{color:var(--danger)}
+.btn.sm{padding:4px 10px;font-size:.875rem}
+label{display:block;font-size:.875rem;font-weight:600;margin:14px 0 4px}
+input,select{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.err{color:var(--danger);font-size:.875rem;min-height:1.3em;margin:10px 0 0}
+
+/* login */
+#login{min-height:100vh;display:grid;place-items:center;padding:20px}
+.login-card{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:28px}
+.login-card h1{margin:0 0 4px;font-size:1.5rem}
+.login-card p{margin:0;color:var(--muted)}
+.hint{margin-top:18px;padding:10px 12px;border-radius:6px;background:var(--bg);font-size:.875rem;color:var(--muted)}
+.hint code{color:var(--ink);font-weight:600}
+.login-card .btn.primary{width:100%;margin-top:16px;padding:10px}
+
+/* app */
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+header h1{margin:0;font-size:1.125rem}
+header .who{color:var(--muted);font-size:.875rem;margin-right:10px}
+main{max-width:960px;margin:0 auto;padding:20px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.bar input{flex:1;min-width:180px;width:auto}
+.count{color:var(--muted);font-size:.875rem;margin:0 0 8px}
+.table-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:620px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line)}
+th{font-size:.8125rem;color:var(--muted);font-weight:600}
+tbody tr:last-child td{border-bottom:0}
+td.actions{white-space:nowrap;text-align:right}
+td.actions .btn{margin-left:6px}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.8125rem}
+.pill.active{background:var(--ok-bg);color:var(--ok)}
+.pill.inactive{background:var(--off-bg);color:var(--off)}
+.empty{padding:34px;text-align:center;color:var(--muted)}
+
+/* dialog */
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--surface);color:var(--ink);padding:24px;width:min(420px,calc(100% - 32px))}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+dialog h2{margin:0 0 4px;font-size:1.125rem}
+.dlg-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+#toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:9px 16px;border-radius:6px;font-size:.875rem}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <div class="login-card">
+    <h1>User management</h1>
+    <p>Sign in to manage users.</p>
+    <div id="loginForm" role="group" aria-label="Sign in">
+      <label for="u">Username</label>
+      <input id="u" autocomplete="username">
+      <label for="p">Password</label>
+      <input id="p" type="password" autocomplete="current-password">
+      <p class="err" id="loginErr" role="alert"></p>
+      <button class="btn primary" id="loginBtn">Sign in</button>
+    </div>
+    <div class="hint">Default credentials: <code>admin</code> / <code>admin123</code></div>
+  </div>
+</section>
+
+<section id="app" hidden>
+  <header>
+    <h1>Users</h1>
+    <div><span class="who" id="who"></span><button class="btn sm" id="logout">Sign out</button></div>
+  </header>
+  <main>
+    <div class="bar">
+      <input id="search" type="search" placeholder="Search by name, email or role" aria-label="Search users">
+      <button class="btn primary" id="addBtn">Add user</button>
+    </div>
+    <p class="count" id="count"></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th></th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <div class="empty" id="empty" hidden>No users match. Add a user or change your search.</div>
+    </div>
+  </main>
+</section>
+
+<dialog id="formDlg">
+  <h2 id="formTitle">Add user</h2>
+  <label for="fName">Name</label><input id="fName">
+  <label for="fEmail">Email</label><input id="fEmail" type="email">
+  <label for="fRole">Role</label>
+  <select id="fRole"><option>User</option><option>Admin</option></select>
+  <label for="fStatus">Status</label>
+  <select id="fStatus"><option>Active</option><option>Inactive</option></select>
+  <p class="err" id="formErr" role="alert"></p>
+  <div class="dlg-actions">
+    <button class="btn" id="formCancel">Cancel</button>
+    <button class="btn primary" id="formSave">Save user</button>
+  </div>
+</dialog>
+
+<dialog id="delDlg">
+  <h2>Delete user</h2>
+  <p id="delMsg"></p>
+  <div class="dlg-actions">
+    <button class="btn" id="delCancel">Cancel</button>
+    <button class="btn danger" id="delOk">Delete user</button>
+  </div>
+</dialog>
+
+<div id="toast" hidden></div>
+
+<script>
+const CREDS={username:"admin",password:"admin123"};
+let users=[
+  {id:1,name:"Asha Raman",email:"asha@example.com",role:"Admin",status:"Active"},
+  {id:2,name:"Karthik Subbu",email:"karthik@example.com",role:"User",status:"Active"},
+  {id:3,name:"Meena Iyer",email:"meena@example.com",role:"User",status:"Inactive"},
+  {id:4,name:"Ravi Kumar",email:"ravi@example.com",role:"User",status:"Active"}
+];
+let nextId=5,editingId=null,deletingId=null;
+const $=id=>document.getElementById(id);
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(toast.t);toast.t=setTimeout(()=>t.hidden=true,2200)}
+
+/* auth */
+function login(){
+  if($("u").value.trim()===CREDS.username&&$("p").value===CREDS.password){
+    $("login").hidden=true;$("app").hidden=false;$("who").textContent="Signed in as "+CREDS.username;
+    $("loginErr").textContent="";$("p").value="";render();
+  }else $("loginErr").textContent="Username or password is incorrect.";
+}
+function logout(){$("app").hidden=true;$("login").hidden=false;$("u").value="";$("search").value=""}
+$("loginBtn").onclick=login;
+$("loginForm").addEventListener("keydown",e=>{if(e.key==="Enter")login()});
+$("logout").onclick=logout;
+
+/* read */
+function render(){
+  const q=$("search").value.trim().toLowerCase();
+  const list=users.filter(u=>[u.name,u.email,u.role,u.status].join(" ").toLowerCase().includes(q));
+  $("count").textContent=list.length+" of "+users.length+" users";
+  $("empty").hidden=list.length>0;
+  $("rows").innerHTML=list.map(u=>`<tr>
+    <td>${esc(u.name)}</td><td>${esc(u.email)}</td><td>${esc(u.role)}</td>
+    <td><span class="pill ${u.status.toLowerCase()}">${u.status}</span></td>
+    <td class="actions"><button class="btn sm" data-edit="${u.id}">Edit</button><button class="btn sm danger" data-del="${u.id}">Delete</button></td></tr>`).join("");
+}
+$("search").oninput=render;
+$("rows").onclick=e=>{
+  const ed=e.target.dataset.edit,dl=e.target.dataset.del;
+  if(ed)openForm(+ed);if(dl)openDelete(+dl);
+};
+
+/* create / update */
+function openForm(id){
+  editingId=id||null;const u=users.find(x=>x.id===id)||{name:"",email:"",role:"User",status:"Active"};
+  $("formTitle").textContent=id?"Edit user":"Add user";
+  $("fName").value=u.name;$("fEmail").value=u.email;$("fRole").value=u.role;$("fStatus").value=u.status;
+  $("formErr").textContent="";$("formDlg").showModal();$("fName").focus();
+}
+$("addBtn").onclick=()=>openForm();
+$("formCancel").onclick=()=>$("formDlg").close();
+$("formSave").onclick=()=>{
+  const name=$("fName").value.trim(),email=$("fEmail").value.trim();
+  if(!name)return $("formErr").textContent="Enter a name.";
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email))return $("formErr").textContent="Enter a valid email address.";
+  if(users.some(u=>u.email.toLowerCase()===email.toLowerCase()&&u.id!==editingId))return $("formErr").textContent="That email is already in use.";
+  const data={name,email,role:$("fRole").value,status:$("fStatus").value};
+  if(editingId){Object.assign(users.find(u=>u.id===editingId),data);toast("User saved")}
+  else{users.push({id:nextId++,...data});toast("User added")}
+  $("formDlg").close();render();
+};
+
+/* delete */
+function openDelete(id){
+  deletingId=id;$("delMsg").textContent="Delete "+users.find(u=>u.id===id).name+"? This can't be undone.";$("delDlg").showModal();
+}
+$("delCancel").onclick=()=>$("delDlg").close();
+$("delOk").onclick=()=>{users=users.filter(u=>u.id!==deletingId);$("delDlg").close();toast("User deleted");render()};
+</script>
+</body>
+</html>
